@@ -16,6 +16,8 @@ import subprocess
 import os
 
 
+
+
 color_palette=[
   '#5e4fa2', '#3288bd', '#66c2a5', '#abdda4', '#e6f598', '#ffffbf', '#fee08b', '#fdae61', 
   '#f46d43', '#d53e4f', '#9e0142',
@@ -142,7 +144,7 @@ if __name__ == '__main__':
   parser.add_argument('alldata_filtered', help='alldata_filtered.csv data table from tprk_pipeline.py')
   parser.add_argument('metadata', help='metadata.csv, same as used with tprk_pipeline.py')
   parser.add_argument('-svg', action='store_true', help='Use this flag to output graphs in .svg format. '
-    'By default, plots will be in .html.')
+  'By default, plots will be in .html.')
   
   try:
     args = parser.parse_args()

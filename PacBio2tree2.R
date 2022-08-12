@@ -4,6 +4,7 @@
 
 list.of.packages <- c("treeio","ggtree","stringr","Biostrings","phylobase","pegas","tidyverse","lubridate","ape",
                       "plyr","phangorn","RColorBrewer","dplyr","optparse","data.table","tidyr", "BiocGenerics")
+lapply(list.of.packages,library,character.only = TRUE)
 suppressMessages(invisible(lapply(list.of.packages,library,character.only=T)))
 
 option_list <- list(make_option(c("-d", "--directory"), type="character", default=NULL, help="Specify working directory", metavar="character"),
@@ -13,8 +14,8 @@ option_list <- list(make_option(c("-d", "--directory"), type="character", defaul
 opt_parser <- OptionParser(option_list=option_list);
 opt <- parse_args(opt_parser)
 
-path <- opt$directory
-#path <- "./"
+#path <- opt$directory
+path <- "/Users/administrator/Desktop/Illumina_PacBio "
 
 if (! is.null(opt$relativefreq)) {
   rf_cutoff = as.numeric(opt$relativefreq)
@@ -34,9 +35,9 @@ if (! is.null(opt$relativefreq)) {
 
 #####
 # Grabs sample names and PacBio files from the metadata file
-metadata <- read.table(opt$metadata, sep=',', header=TRUE)
-PacBio_fns <- c(as.character(metadata$PacBio))
-sample_names <- c(as.character(metadata$SampleName))
+metadata <- read.table('/Users/administrator/Desktop/Illumina_PacBio/metadata_trimmed_pacbio_Ill_test_copy.csv', sep=',', header=TRUE)
+PacBio_fns <- 'PB_Peru214361_trim.fastq.gz'
+sample_names <- 'Peru214361_trim'
 
 ## Function to convert fasta to dataframe
 BString2df=function(BString){
@@ -99,7 +100,7 @@ allAAfilt <- list()
 for (i in 1:length(PacBio_fns)) {
   fastafile_name <- paste((substr(PacBio_fns[i],1,nchar(PacBio_fns[i])-9)),".noprimers.filtered.RAD.nolines.fix.fasta",sep="")
   #fastafile_name <- PacBio_fns[i]
-  fastafile <- reverseComplement(readDNAStringSet(fastafile_name))
+  fastafile <- reverseComplement(readDNAStringSet('/Users/administrator/Desktop/Illumina_PacBio/denoised_fastas/PB_Peru214361_trim.noprimers.filtered.RAD.nolines.fix.fasta'))
   names(fastafile) <- paste(sample_names[i],"_",names(fastafile),sep="")
   fasta_files <- c(fasta_files,fastafile)
   df_list <- c(df_list,BString2df(fastafile))
@@ -128,10 +129,10 @@ for (i in 1:length(PacBio_fns)) {
   print("c after")
   df_aa <- df_aa[,c(2,1,3,4)]
   print(df_aa)
-
+  
   df_aa2 <- tibble::rowid_to_column(df_aa, "ID")
   df_aa$names <- paste(df_aa$names,df_aa2$ID, sep="_")
-
+  
   df_aa <- mutate(df_aa,percentage=round(count / sum(count)*100,3))
   df_aa_filt <- filter(df_aa,percentage>= rf_cutoff)
   df_aa_list[[i]] <- df_aa
@@ -145,6 +146,8 @@ for (i in 1:length(PacBio_fns)) {
   }
 }
 
+print(allAA)
+
 ## Remove TprKs that are not complete ORFs
 allAA_fullORFs_df <- drop_na(removeTruncatedORF(allAA))
 allAAfilt_fullORFs_df <- drop_na(removeTruncatedORF(allAAfilt))
@@ -152,6 +155,18 @@ allAAfilt_fullORFs_df <- drop_na(removeTruncatedORF(allAAfilt))
 ## Remove TprKs that have two frameshifts that put them 
 allAA_fullORFs_df <- drop_na(removeFrameShift(allAA_fullORFs_df))
 allAAfilt_fullORFs_df <- drop_na(removeFrameShift(allAAfilt_fullORFs_df))
+
+#library(dplyr)
+#allAAfilt_fullORFs_df <- dplyr::mutate(allAAfilt_fullORFs_df, id = row_number())
+#allAAfilt_fullORFs_df <- tibble::rowid_to_column(allAAfilt_fullORFs_df, "ID")
+
+#allAAfilt_fullORFs_df$sample <- gsub('.*^', paste0("Peru214361_trim", (rownames(allAAfilt_fullORFs_df$ID))), allAAfilt_fullORFs_df$sample)
+#unite(allAAfilt_fullORFs_df, sample2, c(allAAfilt_fullORFs_df$sample,allAAfilt_fullORFs_df$id)) 
+
+#allAAfilt_fullORFs_df$sample <- paste(allAAfilt_fullORFs_df$sample,allAAfilt_fullORFs_df$id, sep="_")
+
+#drops <- c("ID")
+#allAAfilt_fullORFs_df[ , !(names(allAAfilt_fullORFs_df) %in% drops)]
 
 print("all aa filt full orfs df")
 print(allAAfilt_fullORFs_df)
@@ -165,6 +180,23 @@ write.table(allAAfilt_fullORFs_df,"Table_allAAfilt_fullORFs.tsv",sep='\t',row.na
 allAA_fullORFs_BString <- df2BString(allAA_fullORFs_df)
 allAAfilt_fullORFs_BString <- df2BString(allAAfilt_fullORFs_df)
 
+print(allAA_fullORFs_BString)
+print(allAAfilt_fullORFs_BString)
+
+#allAA_fullORFs_BString <- gsub('Peru214361_trim_trim_',paste0('Peru214361_trim_trim_',)allAA_fullORFs_BString)
+
+#m <- regexpr("Peru214361_trim_trim_", allAA_fullORFs_BString)
+#m <- regexpr("509", allAA_fullORFs_BString)
+#regmatches(allAA_fullORFs_BString,m) <- paste0(regmatches(allAA_fullORFs_BString,m), 1:length(m))
+
+#print(allAA_fullORFs_BString)
+
+#allAA_fullORFs_BString <- dplyr::mutate(allAA_fullORFs_BString, id = row_number())
+#allAA_fullORFs_BString$names <- paste(allAAfilt_fullORFs_df$sample)
+
+#print(allAAfilt_fullORFs_BString$names)
+#print(allAA_fullORFs_BString$names)
+
 AAoutfile <- "Isolates_aa_fullORFs.fasta"
 AAoutfilefilt <- "Isolates_aa_filt_fullORFs.fasta"
 
@@ -176,10 +208,14 @@ writeXStringSet(allAAfilt_fullORFs_BString, paste(AAoutfilefilt,sep=""), append=
 AAaln_outfile <- paste0(substr(AAoutfile,1,nchar(AAoutfile)-5),"aln.fasta")
 AAaln_outfile_filt <- paste0(substr(AAoutfilefilt,1,nchar(AAoutfilefilt)-5),"aln.fasta")
 
+#m <- regexpr("Peru214361_trim_trim_", AAoutfile)
+#regmatches(AAoutfile,m) <- paste0(regmatches(AAoutfile,m), 1:length(m))
+
+
 #mafft_command <- paste0("mafft --auto ",AAoutfile," > ",AAaln_outfile)
 #system(mafft_command)
 
-mafft_command <- paste0("/usr/local/miniconda/bin/mafft --auto ",AAoutfilefilt," > ",AAaln_outfile_filt)
+mafft_command <- paste0("/Users/administrator/anaconda3/bin/mafft --auto ",AAoutfilefilt," > ",AAaln_outfile_filt)
 system(mafft_command)
 
 AAtree_outfile <-paste0(substr(AAoutfile,1,nchar(AAoutfile)-5),"aln.tree.nwk")
@@ -187,21 +223,19 @@ AAtree_outfile_filt <-paste0(substr(AAaln_outfile_filt,1,nchar(AAaln_outfile_fil
 
 #fasttree_command <- paste0("fasttree ",AAaln_outfile," > ",AAtree_outfile)
 #system(fasttree_command)
-fasttree_command <- paste0("/usr/local/miniconda/bin/fasttree ",AAaln_outfile_filt," > ",AAtree_outfile_filt)
+fasttree_command <- paste0("/Users/administrator/anaconda3/bin/fasttree ",AAaln_outfile_filt," > ",AAtree_outfile_filt)
 system(fasttree_command)
 
 
 ##Read in FastTree newick file
-#tree <- read.newick(paste0('./',AAtree_outfile_filt))
-tree <- read.newick(AAtree_outfile_filt)
-
+tree <- read.newick(paste0('./',AAtree_outfile_filt))
 mycolors <- colorRampPalette(brewer.pal(name="Accent", n = 8))(length(sample_names))
 # mycolors <- colorRampPalette(brewer.pal(name="Dark2", n = 8))(length(sample_names)+4)
 
 
 ## Have to reorder manually!
-#tree <- reorder(tree,"postorder")
-#tree <- phangorn::midpoint(tree)
+# tree <- reorder(tree,"postorder")
+# tree <- phangorn::midpoint(tree)
 #tree <- root(tree, which(tree$tip.label == "148B_seqs86_220"))
 #tree <- reorder(tree)
 
@@ -212,7 +246,8 @@ setDT(d2)[, percentage := round((count/sum(count))*100,3), by = sample]
 ggtree <- ggtree(tree) %<+% d2 + geom_tippoint(aes(color=sample,size=percentage),alpha=0.8) + 
   theme(legend.position = "right",legend.title = element_blank(),legend.key.width=unit(0.2,"cm"),legend.text=element_text(size=10)) + 
   scale_colour_manual(values=mycolors) + 
-  geom_treescale(x=0.001,y=60,fontsize=3,offset=3) + guides(colour = guide_legend(override.aes = list(size=3))) + 
+  #geom_treescale(x=0.001,y=600,fontsize=3,offset=3) + guides(colour = guide_legend(override.aes = list(size=3))) + 
+  geom_treescale(x=0.001,y=6,fontsize=3,offset=3) + guides(colour = guide_legend(override.aes = list(size=3))) + 
   scale_size(name="Percentage", breaks=c(0.5,2,10,40)) 
 
 # ggtree <- ggtree(tree) %<+% d2 + geom_tippoint(aes(color=sample,size=percentage),alpha=0.8,) + 
@@ -221,10 +256,12 @@ ggtree <- ggtree(tree) %<+% d2 + geom_tippoint(aes(color=sample,size=percentage)
 #   geom_treescale(x=0.005,y=150,fontsize=3.5,offset=2) + guides(colour = guide_legend(override.aes = list(size=3))) + 
 #   scale_size(name="Percentage", breaks=c(0.2,0.5,2,5)) 
 
+print(ggtree)
 
 #ggsave(path="./",filename="PacBio_Tree_Filtered.pdf",height = 6, width=4)
 ggsave(plot = ggtree, filename="PacBio_Tree_Filtered.pdf",height = 6, width=4)
 save.image(file = "PacBio_Tree_Filtered.RData")
+
 
 # ggtree(tree) %<+% d2 + geom_tippoint(aes(color=sample,size=count),alpha=0.8) + 
 #   theme(legend.position = c(0.8,0.2),legend.title = element_blank(),legend.key.width=unit(0.2,"cm"),legend.text=element_text(size=10)) + 

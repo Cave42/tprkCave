@@ -1,8 +1,11 @@
 # Generates dot-line plots for comparing the variable regions between two samples.
 # Currently takes the path and goes through the allreads.csv.
 
-list.of.packages <- c("ggplot2", "grid", "nplr", "plyr", "dplyr", "scales", "gridExtra", "RColorBrewer", "optparse","randomcoloR", "cowplot",
-                      "tidyr", "tibble", "foreach","iterators","doParallel")
+list.of.packages <- c("ggplot2", "grid", "nplr", "plyr", "dplyr", "scales", "gridExtra", "RColorBrewer", "optparse", "cowplot",
+                      "tidyr", "tibble", "foreach","iterators","doParallel","grDevices")
+
+#"optparse","randomcoloR", "cowplot",
+
 lapply(list.of.packages,library,character.only=T)
 
 option_list <- list(make_option(c("-d", "--directory"), type="character", default=NULL, help="Specify working directory", metavar="character"),
@@ -43,14 +46,30 @@ sample_names = as.character(metadata$SampleName)
 alldata <- read.csv(allreads_filtered,header=TRUE,sep=",",stringsAsFactors = FALSE)
 
 # If no reference sample given, loop through and compare all the files.
-if (ref_sample == FALSE) {
+if (ref_sample == FALSE && length(sample_names) > 1) {
   # Loops through and generates variable region comparisons for all the combinations of files.
   # This means a lot of files if list is long.
+  
+  print(paste0("sample names",length(sample_names)))
+
+  #j <- 0
+
   for (i in 1:(length(sample_names) - 1)) {
-    foreach(j=i+1:(length(sample_names) - 1)) %dopar% 
+  
+    j <- i + 1
+
+    foreach(j:(length(sample_names) - 1)) %dopar% 
+
+      print(paste0("Sample Names = ", length(sample_names)))
+      print(paste0('i = ', i))
+      print(paste0('j = ', j))
+      
       print(paste("Generating figure for ",sample_names[i]," and ",sample_names[j],"...",sep=""))
+      
       rfcol <- paste("Ill_",sample_names[i],"_RelativeFreq",sep = "")
+      #print("i",i) 
       rfcol2 <- paste("Ill_",sample_names[j],"_RelativeFreq",sep = "")
+      #print("j",j)
 
       commondfIllumina <- select(alldata,Region,Read,rfcol,rfcol2)
       commondfIllumina <- filter(commondfIllumina,!((commondfIllumina[[rfcol]] == 0) & (commondfIllumina[[rfcol2]] == 0)))
@@ -58,8 +77,13 @@ if (ref_sample == FALSE) {
       sortedIllumina <- gather(sortedIllumina,rfcol,rfcol2,key="Sample",value="Frequency")
       sortedIllumina$Sample[sortedIllumina$Sample == rfcol] <- sample_names[i]
       sortedIllumina$Sample[sortedIllumina$Sample == rfcol2] <- sample_names[j]
+
+      #print(paste("Sorted Illumina Read =", sortedIllumina$Read))
       
-      myColors <- distinctColorPalette(length(sortedIllumina$Read))
+      #myColors <- distinctColorPalette(length(sortedIllumina$Read))
+      
+      myColors <- rainbow(length(sortedIllumina$Read))
+      
       names(myColors) <- levels(sortedIllumina$Read)
       colScale <- scale_colour_manual(name = NULL, guide = FALSE, values = myColors)
       h <- ggplot(sortedIllumina[which(sortedIllumina$Frequency>0),]) + geom_point(aes(y = Frequency, x = Sample, color=Read)) + geom_line(aes(y = Frequency, x = Sample, group=Read, color=Read)) +  
@@ -69,8 +93,11 @@ if (ref_sample == FALSE) {
       suppressMessages(ggsave(paste(sample_names[i],"_vs_",sample_names[j],"_VariableRegions_DotLine_Filtered.pdf",sep=""),
             path="./",plot=h1,width=5,height=4,units="in"))
     }
-  }
-} else {
+ 
+
+  #print("I am here ")
+
+} else if(ref_sample == TRUE) {
   foreach(j=1:(length(sample_names))) %dopar% {
     if (sample_names[j] != ref_sample) {
       print("Using reference figure specified.")

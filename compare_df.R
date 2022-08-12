@@ -47,7 +47,9 @@ sample_names <- c(as.character(metadata$SampleName))
 syph_path <- opt$script_path
 
 noprimer_filenames <- paste(substr(basename(PacBio_fns),1,nchar(basename(PacBio_fns))-8),"noprimers.fastq",sep ='')
-nop <- file.path(noprimer_filenames)
+nop <- file.path(paste0('./',noprimer_filenames))
+
+print(nop)
 
 if(opt$illumina == FALSE) {
   RAD_filenames <- paste(substr(basename(PacBio_fns),1,nchar(basename(PacBio_fns))-8),"noprimers.filtered.RAD.fasta",sep ='')
@@ -64,13 +66,12 @@ if(opt$illumina == FALSE) {
     syphrPacBio_command <- paste("python3 ",syph_path," -i fasta -pacbio -d . -s ",PB_file_name,sep='')
     system(syphrPacBio_command)
   }
-  
+ 
   ## Make PacBio frequency comparison file
   print("Making PacBio comparison dataframe...")
   PacBio_freq_files = list.files("./",pattern="*_final_data.csv")
   PacBio_freq_files_fullpath = list.files("./",pattern="*_final_data.csv",full.names=T)
   compare_PacBio_df <- data.frame(Region=character(),Read=character())
-  
   sample_names <- sort(sample_names)
   
   # Renames the columns attaching PB and sample name to relative frequency and count so we can 
@@ -85,7 +86,8 @@ if(opt$illumina == FALSE) {
     write.csv(compare_PacBio_df,file=compare_PacBio_df_out,row.names=FALSE,quote=FALSE)
     # assign(PacBio_freq_files[i], read.csv(PacBio_freq_files_fullpath[i],col.names = c("Region","Read",PacBioFreqtitle,PacBioCounttitle)))
     # compare_PacBio_df <- merge(compare_PacBio_df,get(PacBio_freq_files[i]),all=TRUE)
-  } 
+  }
+
 } else {
   print("Illumina option specified. Skipping making PacBio frequency files...")
 }
@@ -136,3 +138,4 @@ if (opt$pacbio == FALSE) {
     }
   }
 }
+

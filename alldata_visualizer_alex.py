@@ -247,7 +247,8 @@ if __name__ == '__main__':
 	read_metadata_file = open(metadata_file, "r",encoding='utf-8-sig')
 	metadata_file_lines = read_metadata_file.readlines()
 	for paired_samples in metadata_file_lines:
-		sample, illumina_sample, pacbio_sample = paired_samples.split(",")
+		if len(paired_samples.split(',')) == 3:
+			sample, illumina_sample, pacbio_sample = paired_samples.split(",")
 		if(sample!="SampleName"):
 			if(sample in sname for sname in first_row):
 				sample_list.append(sample)

@@ -21,6 +21,12 @@ opt <- parse_args(opt_parser)
 path <- opt$directory
 script.dir <- opt$script_path
 
+#path <- '/Users/administrator/Desktop/Illumina_PacBio/'
+#script.dir <- '/Users/administrator/Desktop/Illumina_PacBio/'
+
+#print(paste("Path", length(opt$pac)))
+#print(paste("Dir", opt$pacbiosample))
+
 #####
 
 ## To run this script manually in R, uncomment the following lines. You do not need to change the preceding lines of path and script.dir,
@@ -28,43 +34,53 @@ script.dir <- opt$script_path
 ## path refers to the folder your metadata.csv and sequencing files (.fastq) are. (This is the -directory option).
 ## script.dir refers to the folder where all the script files are located. This should point to where you saved the cloned GitHub.
 
-#path <- "/Users/administrator/Desktop/Illumina_PacBio"
-#script.dir <- "/Users/administrator/Desktop/Illumina_PacBio"
+#path <- '/Users/administrator/Desktop/Illumina_PacBio/'
+#script.dir <- "/Users/administrator/Desktop/Illumina_PacBio/"
 
 ## This script can also be run from the command line.
 ## Usage: rscript \path\to\og_files_to_all_reads.R -s [script_path] -d [directory]
 
 #####
 
+print(paste("39", opt$pacbio_sample))
+
+#PacBio_fns <- 'Peru214361_trim'
 PacBio_fns <- c(as.character(opt$pacbio_sample))
+
+#PacBio_fns <- gsub("PB_","", PacBio_fns)
+#PacBio_fns <- gsub(".fastq.gz","", PacBio_fns)
+
+PacBio_fns <- paste0(opt$script_path,"/",opt$pacbio_sample)
+
+#PacBio_fns <- c(as.character(PacBio_fns))
+
+#PacBio_fns <- c(as.character(opt$pacbio_sample))
+
+print(paste("Pacbiofns", PacBio_fns))
+
+print(opt$directory)
+
+print(opt$script_path)
 
 ## Identify primers to go from ATG to stop in tprK
 tprKF <- "GGAAAGAAAAGAACCATACATCC"
 tprKR <- "CGCAGTTCCGGATTCTGA"
 rc <- dada2:::rc
-#noprimer_filenames <- paste(substr(basename(PacBio_fns),1,nchar(basename(PacBio_fns))-5),"noprimers.fastq",sep ='')
-noprimer_filenames <- paste(gsub("fastq.gz$", "noprimers.fastq", PacBio_fns))
+#noprimer_filenames <- paste(substr(basename(PacBio_fns),1,nchar(basename(PacBio_fns))-5),".noprimers.fastq",sep ='')
+
+noprimer_filenames <- paste0(PacBio_fns,".noprimers.fastq")
+
 nop <- file.path(noprimer_filenames)
 
-print(paste("length pacbio_sample", length(opt$pacbiosample)))
-print(paste("pacbio_sample", opt$pacbiosample))
-print(paste("PacBIOFNS", PacBio_fns[0]))
-print(paste("length PacBIOFNS", length(PacBio_fns)))
-print(paste("No Primer Filenames",noprimer_filenames))
-print(paste("Nop",nop))
-print(paste("PacBio Fns",PacBio_fns))
+print(noprimer_filenames)
+print(nop)
 
-print("Ending")
-
-#weffsdffsfsdffsdfsdfdfsfsdf
-
-
-
+wewfewfwefew
 
 if(opt$illumina == FALSE) {
   ## Points to Julia install in docker "quay.io/greninger-lab/tprk"
-  julia <- julia_setup(JULIA_HOME = "/usr/local/julia/bin")
-  #julia <- julia_setup(JULIA_HOME = "/Applications/Julia-0.6.app/Contents/Resources/julia/bin/")
+  #julia <- JuliaCall::julia_setup(JULIA_HOME = "/Applications/Julia-0.6.app/Contents/Resources/julia/bin/")
+  julia <- JuliaCall::julia_setup(JULIA_HOME = "/usr/local/julia/bin")
   ## Remove primers
   for (count in c(1:length(nop))) {
     if(file.exists(nop[count])) {
@@ -73,29 +89,19 @@ if(opt$illumina == FALSE) {
       print("Removing primers from PacBio...")
       print(opt$metadata)
       print(PacBio_fns)
-      nop <- tempfile(fileext=".fastq.gz")
-
-      PacBio_fns2 <- file.path('/Users/administrator/Desktop/Illumina_PacBio/',PacBio_fns)
-
-      print(paste("PacBio_fns2", PacBio_fns2))
-
-      prim <- removePrimers(PacBio_fns2, nop, primer.fwd=tprKF, primer.rev=rc(tprKR), orient=TRUE, verbose=TRUE)
-      #prim <- removePrimers(PacBio_fns, nop, primer.fwd=tprKF, primer.rev=rc(tprKR), orient=TRUE, verbose=TRUE)
+      prim <- dada2::removePrimers(PacBio_fns, nop, primer.fwd=tprKF, primer.rev=rc(tprKR), orient=TRUE, verbose=TRUE)
     }
   }
 
   print("Filtering PacBio reads...")
   ## Setting up file names to filter.
-  
   #filter_filenames <- paste(substr(basename(PacBio_fns),1,nchar(basename(PacBio_fns))-5),"noprimers.filtered.fastq",sep ='')
-  filter_filenames <- paste(gsub("fastq.gz$", "noprimers.filtered.fastq", PacBio_fns))
   #filterEE1_filenames <- paste(substr(basename(PacBio_fns),1,nchar(basename(PacBio_fns))-5),"noprimers.filtered.EE1.fastq",sep ='')
-  filterEE1_filenames <- paste(gsub("fastq.gz$", "noprimers.filtered.fastq", PacBio_fns))
-  
-  #filt <- file.path(filter_filenames)
-  filt <- file.path('/Users/administrator/Desktop/Illumina_PacBio', filter_filenames)
-  #filtEE1 <- file.path(filterEE1_filenames)
-  filtEE1 <- file.path('/Users/administrator/Desktop/Illumina_PacBio', filterEE1_filenames)
+  filter_filenames <- paste0(PacBio_fns,".noprimers.filtered.fastq")
+  filterEE1_filenames <- paste0(PacBio_fns,".noprimers.filtered.EE1.fastq")
+
+  filt <- file.path(filter_filenames)
+  filtEE1 <- file.path(filterEE1_filenames)
   
   ## Filter reads for tprK length and do not worry about expected errors.
   for (count in c(1:length(filt))) {
@@ -103,7 +109,7 @@ if(opt$illumina == FALSE) {
       print(paste(filter_filenames[count]," already exists. Skipping filtering step..."), sep="")
     } else {
       print(paste("Filtering ",nop[count],"...",sep=""))
-      track <- fastqFilter(nop[count], filt[count], minLen=1400,maxLen=1800,
+      track <- dada2::fastqFilter(nop[count], filt[count], minLen=1400,maxLen=1800,
                            maxN=0,
                            compress=FALSE, multithread=TRUE)
     }
@@ -116,11 +122,11 @@ if(opt$illumina == FALSE) {
   #                        compress=FALSE, multithread=TRUE)
   # }
   
-  RAD_filenames <- paste(gsub("fastq.gz$", "noprimers.filtered.RAD.fasta", PacBio_fns))
-  #RAD_filenames <- paste(substr(basename(PacBio_fns),1,nchar(basename(PacBio_fns))-5),"noprimers.filtered.RAD.fasta",sep ='')
+  print("line 99")
   
-  print(paste("RAD_filenames", RAD_filenames))
-  RAD_files <- file.path('/Users/administrator/Desktop/Illumina_PacBio/',RAD_filenames)
+  #RAD_filenames <- paste(substr(basename(PacBio_fns),1,nchar(basename(PacBio_fns))-5),"noprimers.filtered.RAD.fasta",sep ='')
+  RAD_filenames <- paste0(PacBio_fns,".noprimers.filtered.RAD.fasta")
+  RAD_files <- file.path(RAD_filenames)
   
      
   ## Build RAD files for each PacBio sample. This step takes forever!!!
@@ -134,27 +140,48 @@ if(opt$illumina == FALSE) {
       if (count == 1) {
         print("Setting up Julia...")
         print("Constructing RAD files...")
-        julia_command("Pkg.init(); Pkg.update(); Pkg.clone(\"https://github.com/MurrellGroup/NextGenSeqUtils.jl\"); using NextGenSeqUtils")
-        julia_command("Pkg.clone(\"https://github.com/MurrellGroup/DPMeansClustering.jl.git\")")
-        julia_command("Pkg.clone(\"https://github.com/MurrellGroup/RobustAmpliconDenoising.jl.git\"); using RobustAmpliconDenoising")
+        #JuliaCall::julia_command("Pkg.init(); Pkg.update(); Pkg.clone(\"https://github.com/MurrellGroup/NextGenSeqUtils.jl\"); using NextGenSeqUtils")
+        #JuliaCall::julia_command("Pkg.clone(\"https://github.com/MurrellGroup/DPMeansClustering.jl.git\")")
+        #JuliaCall::julia_command("Pkg.clone(\"https://github.com/MurrellGroup/RobustAmpliconDenoising.jl.git\"); using RobustAmpliconDenoising")
+        
+        JuliaCall::julia_command("Pkg.init();")
+        JuliaCall::julia_command("Pkg.update();")
+        JuliaCall::julia_command("Pkg.clone(\"https://github.com/MurrellGroup/NextGenSeqUtils.jl\");")
+        JuliaCall::julia_command("using NextGenSeqUtils")
+        
+        JuliaCall::julia_command("Pkg.clone(\"https://github.com/MurrellGroup/DPMeansClustering.jl.git\")")
+        
+        JuliaCall::julia_command("Pkg.clone(\"https://github.com/MurrellGroup/RobustAmpliconDenoising.jl.git\");")
+        JuliaCall::julia_command("using RobustAmpliconDenoising")
+        
       }
-      # julia_command("using Pkg")
-      # julia_command("Pkg.build(\"SpecialFunctions\")")
-      # julia_command("Pkg.add(PackageSpec(name=\"NextGenSeqUtils\", rev= \"1.0\", url = \"https://github.com/MurrellGroup/NextGenSeqUtils.jl.git\"))")
-      # julia_command("Pkg.add(PackageSpec(name=\"DPMeansClustering\", rev=\"1.0\", url = \"https://github.com/MurrellGroup/DPMeansClustering.jl.git\"))")
-      # julia_command("Pkg.add(PackageSpec(name=\"RobustAmpliconDenoising\", rev=\"1.0\", url = \"https://github.com/MurrellGroup/RobustAmpliconDenoising.jl.git\"))")
+       # julia_command("using Pkg")
+       #julia_command("Pkg.build(\"SpecialFunctions\")")
+       #julia_command("Pkg.add(PackageSpec(name=\"NextGenSeqUtils\", rev= \"1.0\", url = \"https://github.com/MurrellGroup/NextGenSeqUtils.jl.git\"))")
+       #julia_command("Pkg.add(PackageSpec(name=\"DPMeansClustering\", rev=\"1.0\", url = \"https://github.com/MurrellGroup/DPMeansClustering.jl.git\"))")
+       #julia_command("Pkg.add(PackageSpec(name=\"RobustAmpliconDenoising\", rev=\"1.0\", url = \"https://github.com/MurrellGroup/RobustAmpliconDenoising.jl.git\"))")
 
       # julia_command("using RobustAmpliconDenoising")
-
+	
+      print(paste("Line 142", count))	
 
       julia_readfastq <- paste("seqs, QVs, seq_names = read_fastq(\"",filt[count],'")',sep="")
-      julia_command(julia_readfastq)
-      julia_command("templates,template_sizes,template_indices = denoise(seqs)")
+      print(paste("Line 145", count))	
+      #julia_readfastq <- paste("seqs, QVs, seq_names = read_fastq("Peru214361noprimers.filtered.fastq")")
+      JuliaCall::julia_command(julia_readfastq)
+      print(paste("Line 148", count))	
+      JuliaCall::julia_command("templates,template_sizes,template_indices = denoise(seqs)")
+      print(paste("Line 150", count))	
       julia_writefasta <- paste("write_fasta(\"",RAD_files[count],'",templates,names = ["seqs$(j)_$(template_sizes[j])" for j in 1:length(template_sizes)])',sep="")
-      julia_command(julia_writefasta)
+      print(paste("Line 152", count))	
+      JuliaCall::julia_command(julia_writefasta)
+      print(paste("Line 154", count))	
+    
     }
   }
   
+  
+  print("line 159")
   ## RAD denoised files are written.  Let's get some frequencies of different variable regions
   RAD_files_nolines <- paste(substr(RAD_files,1,nchar(RAD_files)-5),"nolines.fasta",sep ='')
   RAD_files_fix <- paste(substr(RAD_files,1,nchar(RAD_files)-5),"nolines.fix.fasta",sep ='')
@@ -166,8 +193,9 @@ if(opt$illumina == FALSE) {
   for (count in c(1:length(awk_command))) {
     system(awk_command[count])
     system(fix_firstline[count])
-  
+  print("line 171")
   }
 } else {
   print("Illumina option specified. Skipping making PacBio frequency files...")
 }
+

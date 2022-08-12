@@ -38,8 +38,10 @@ def find_region(sample, input_format, is_pacbio, current_dir, strain_name):
 		line_block = 2
 	else:
 		line_block = 4
-		
+
+	#for line_num, line in enumerate(open(current_dir + "/" + sample)):
 	for line_num, line in enumerate(open(current_dir + "/" + sample)):
+	#for line_num, line in enumerate(open("/Users/administrator/Desktop/Illumina_PacBio/denoised_fastas/PB_Peru214361_trim.noprimers.filtered.RAD.nolines.fix.fasta")):
 		# Finds read name
 		if (line_num % line_block == 0):
 			read_name = line
@@ -203,7 +205,8 @@ def make_table(strain_name, current_dir):
 	variable_regions = ["V1", "V2", "V3", "V4", "V5", "V6", "V7"]
 
 	table = open(current_dir + "/" + strain_name + "_final_data.csv", "w+")
-	table2 = open(current_dir + "/" + strain_name + "_over5count_final_dna_data.csv", "w+")
+	#table2 = open(current_dir + "/" + strain_name + "_over5count_final_dna_data.csv", "w+")
+	table2 = open(current_dir + "/" + strain_name + "_over1count_final_dna_data.csv", "w+")
 	table.write("Region,Read,RelativeFreq,Count" + "\n")
 	table2.write("Region,Read,RelativeFreq,Count" + "\n")
 	for index, v_list in enumerate(Vlist_of_aas):
@@ -214,9 +217,9 @@ def make_table(strain_name, current_dir):
 	for index, v_list in enumerate(Vlist_of_dna):
 		total = total_count(v_list)
 		for read_seq, count in v_list:
-			if(count>=5):
-				table2.write(variable_regions[index] + "," + read_seq + "," + 
-					str(((count / total) * 100)) + "," + str(count) + "\n")
+			#if(count>=5):
+			table2.write(variable_regions[index] + "," + read_seq + "," + 
+				str(((count / total) * 100)) + "," + str(count) + "\n")
 
 	# Filters out the lines with greater than 1% to a separate _final_data_fitered.csv.
 	#subprocess.call("awk -F\"[,|\\(]\" \'($3+0)>=1{print}\' " + strain_name + "_final_data.csv > " + strain_name + "_final_data_filtered.csv", shell=True)

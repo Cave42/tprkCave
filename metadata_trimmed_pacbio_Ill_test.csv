@@ -1,0 +1,7 @@
+﻿SampleName,Illumina,PacBio
+Peru213161_trim,Ill_Peru213161_trim.fastq.gz,PB_Peru213161_trim.fastq.gz
+Peru214361_trim,Ill_Peru214361_trim.fastq.gz,PB_Peru214361_trim.fastq.gz
+Peru214601_trim,Ill_Peru214601_trim.fastq.gz,PB_Peru214601_trim.fastq.gz
+PeruC10010_trim,Ill_PeruC10010_trim.fastq.gz,PB_PeruC10010_trim.fastq.gz
+PeruC40020_trim,Ill_PeruC40020_trim.fastq.gz,PB_PeruC40020_trim.fastq.gz
+PeruC40040_trim,Ill_PeruC40040_trim.fastq.gz,PB_PeruC40040_trim.fastq.gz

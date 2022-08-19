@@ -15,7 +15,7 @@ opt_parser <- OptionParser(option_list=option_list);
 opt <- parse_args(opt_parser)
 
 #path <- opt$directory
-path <- "/Users/administrator/Desktop/Illumina_PacBio "
+path <- "/Users/administrator/Desktop/Illumina_PacBio/Test50/denoised_fastas/"
 
 if (! is.null(opt$relativefreq)) {
   rf_cutoff = as.numeric(opt$relativefreq)
@@ -36,8 +36,8 @@ if (! is.null(opt$relativefreq)) {
 #####
 # Grabs sample names and PacBio files from the metadata file
 metadata <- read.table('/Users/administrator/Desktop/Illumina_PacBio/metadata_trimmed_pacbio_Ill_test_copy.csv', sep=',', header=TRUE)
-PacBio_fns <- 'PB_Peru214361_trim.fastq.gz'
-sample_names <- 'Peru214361_trim'
+PacBio_fns <- c(as.character(metadata$PacBio))
+sample_names <- c(as.character(metadata$SampleName))
 
 ## Function to convert fasta to dataframe
 BString2df=function(BString){
@@ -100,7 +100,7 @@ allAAfilt <- list()
 for (i in 1:length(PacBio_fns)) {
   fastafile_name <- paste((substr(PacBio_fns[i],1,nchar(PacBio_fns[i])-9)),".noprimers.filtered.RAD.nolines.fix.fasta",sep="")
   #fastafile_name <- PacBio_fns[i]
-  fastafile <- reverseComplement(readDNAStringSet('/Users/administrator/Desktop/Illumina_PacBio/denoised_fastas/PB_Peru214361_trim.noprimers.filtered.RAD.nolines.fix.fasta'))
+  fastafile <- reverseComplement(readDNAStringSet(paste0('/Users/administrator/Desktop/Illumina_PacBio/Test50/denoised_fastas/',fastafile_name)))
   names(fastafile) <- paste(sample_names[i],"_",names(fastafile),sep="")
   fasta_files <- c(fasta_files,fastafile)
   df_list <- c(df_list,BString2df(fastafile))

@@ -1,6 +1,7 @@
-﻿SampleName,Illumina,PacBio
-Peru214361,Ill_Peru214361.fastq.gz,PB_Peru214361.fastq.gz
-Peru214601,Ill_Peru214601.fastq.gz,PB_Peru214601.fastq.gz
-PeruC10010,Ill_PeruC10010.fastq.gz,PB_PeruC10010.fastq.gz
-PeruC40020,Ill_PeruC40020.fastq.gz,PB_PeruC40020.fastq.gz
-PeruC40040,Ill_PeruC40040.fastq.gz,PB_PeruC40040.fastq.gz
+﻿SampleName,Illumina,PacBio,BioSample,Replicate
+Dublin24B_B,Ill_Dublin24B_B.fastq.gz,,Dublin24B,B
+Dublin24B_A,Ill_Dublin24B_A.fastq.gz,,Dublin24B,A
+MD18B_B,Ill_MD18B_B.fastq.gz,,MD18B,B
+MD18B_A,Ill_MD18B_A.fastq.gz,,MD18B,A
+UAB162_B,Ill_UAB162_B.fastq.gz,,UAB162,B
+UAB162_A,Ill_UAB162_A.fastq.gz,,UAB162,A
